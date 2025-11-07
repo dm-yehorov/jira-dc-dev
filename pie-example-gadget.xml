@@ -24,7 +24,7 @@
                             return;
                         }
 
-                        fetch(AJS.contextPath() + "/rest/scriptrunner/latest/custom/doSomething?key=" + issueKey)
+                        fetch("http://192.168.10.10:8080/rest/scriptrunner/latest/custom/doSomething?key=" + issueKey)
                             .then(r => r.json())
                             .then(data => {
                                 var name = data.status || "Unknown";
