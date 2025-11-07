@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Module>
+  <ModulePrefs
+    title="Pie Chart Example"
+    author="You"
+    description="Simple gadget with user-level saved issueKey"
+  >
+    <Require feature="dynamic-height"/>
+    <Require feature="setprefs"/>
+  </ModulePrefs>
+
+  <Content type="html">
+    <![CDATA[
+
+<style>
+  .box { margin-bottom: 8px; }
+</style>
+
+<div class="box">
+  <label>Issue Key:</label>
+  <input id="issueKey" type="text" placeholder="ABC-123" />
+  <button onclick="saveIssue()">Save</button>
+</div>
+
+<canvas id="pieCanvas" width="300" height="300"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  // prefs accessor
+  var prefs = gadgets.Prefs();
+
+  // Load saved value
+  function loadIssue() {
+    var saved = prefs.getString("issueKey");
+    if (saved) {
+      document.getElementById("issueKey").value = saved;
+      refreshPie();
+    }
+  }
+
+  // Save value → prefs
+  function saveIssue() {
+    var val = document.getElementById("issueKey").value;
+    prefs.set("issueKey", val);
+
+    refreshPie();
+  }
+
+  // Dummy sample dataset
+  // (Тут буде AJAX або логіка, але поки — статичні дані)
+  function refreshPie() {
+    var key = document.getElementById("issueKey").value;
+    if (!key) return;
+
+    // Example data
+    var data = {
+      labels: ["To Do", "In Progress", "Done"],
+      counts: [3, 5, 2]
+    };
+
+    drawPie(data);
+  }
+
+  var chartInstance = null;
+
+  function drawPie(data) {
+    var ctx = document.getElementById('pieCanvas').getContext('2d');
+
+    if (chartInstance != null) {
+      chartInstance.destroy();
+    }
+
+    chartInstance = new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: data.labels,
+        datasets: [{
+          data: data.counts
+        }]
+      }
+    });
+  }
+
+  // On load
+  loadIssue();
+</script>
+
+    ]]>
+  </Content>
+</Module>
