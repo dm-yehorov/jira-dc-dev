@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Module>
+    <ModulePrefs
+        title="Issue Status Gadget"
+        author="Example"
+        description="Store issue key and show status">
+    </ModulePrefs>
+
+    <!-- User preference (saved automatically in Jira storage) -->
+    <UserPref name="issueKey" display_name="Issue Key" default=""/>
+
+    <!-- Main gadget view -->
+    <Content type="html" view="default">
+        <![CDATA[
+            <html>
+            <head>
+                <script>
+                    function loadStatus() {
+                        var prefs = new gadgets.Prefs();
+                        var issueKey = prefs.getString("issueKey");
+
+                        if (!issueKey) {
+                            document.getElementById("status").innerHTML = "No issue selected";
+                            return;
+                        }
+
+                        fetch(AJS.contextPath() + "/rest/api/2/issue/" + issueKey)
+                            .then(r => r.json())
+                            .then(data => {
+                                var name = data.fields?.status?.name || "Unknown";
+                                document.getElementById("status").innerHTML =
+                                    "<b>Status:</b> " + name;
+                            })
+                            .catch(err => {
+                                document.getElementById("status").innerHTML =
+                                    "Error: " + err;
+                            });
+                    }
+
+                    gadgets.util.registerOnLoadHandler(loadStatus);
+                </script>
+            </head>
+
+            <body>
+                <div><b>Issue:</b> __MSG_issueKey__</div>
+                <div id="status">Loading...</div>
+            </body>
+            </html>
+        ]]>
+    </Content>
+
+    <!-- Config UI -->
+    <Content type="html" view="config">
+        <![CDATA[
+            <html>
+            <body>
+                <form id="cfgForm">
+                    Issue Key: <input id="issueKey" type="text"/>
+                    <button type="submit">Save</button>
+                </form>
+
+                <script>
+                    var prefs = new gadgets.Prefs();
+                    document.getElementById("issueKey").value =
+                        prefs.getString("issueKey");
+
+                    document.getElementById("cfgForm").onsubmit = function() {
+                        prefs.set("issueKey", document.getElementById("issueKey").value);
+                        gadgets.window.close();
+                        return false;
+                    };
+                </script>
+            </body>
+            </html>
+        ]]>
+    </Content>
+</Module>
