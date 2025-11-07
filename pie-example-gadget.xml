@@ -29,7 +29,7 @@
                             .then(data => {
                                 var name = data.status || "Unknown";
                                 document.getElementById("status").innerHTML =
-                                    "<b>Status:</b> " + name;
+                                    "<b>Status:</b> " + AJS.contextPath();
                             })
                             .catch(err => {
                                 document.getElementById("status").innerHTML =
