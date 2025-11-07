@@ -3,22 +3,23 @@
   <ModulePrefs
     title="Pie Chart Example"
     author="You"
-    description="Simple gadget with user-level saved issueKey"
-  >
-    <Require feature="dynamic-height"/>
+    description="Simple gadget with user stored issueKey">
     <Require feature="setprefs"/>
+    <Require feature="dynamic-height"/>
   </ModulePrefs>
+
+  <!-- USER PREF DEFINITION -->
+  <UserPref name="issueKey" display_name="Issue Key" datatype="string" />
 
   <Content type="html">
     <![CDATA[
-
 <style>
   .box { margin-bottom: 8px; }
 </style>
 
 <div class="box">
   <label>Issue Key:</label>
-  <input id="issueKey" type="text" placeholder="ABC-123" />
+  <input id="issueKey" type="text" />
   <button onclick="saveIssue()">Save</button>
 </div>
 
@@ -27,10 +28,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-  // prefs accessor
   var prefs = gadgets.Prefs();
 
-  // Load saved value
   function loadIssue() {
     var saved = prefs.getString("issueKey");
     if (saved) {
@@ -39,21 +38,16 @@
     }
   }
 
-  // Save value → prefs
   function saveIssue() {
     var val = document.getElementById("issueKey").value;
     prefs.set("issueKey", val);
-
     refreshPie();
   }
 
-  // Dummy sample dataset
-  // (Тут буде AJAX або логіка, але поки — статичні дані)
   function refreshPie() {
     var key = document.getElementById("issueKey").value;
     if (!key) return;
 
-    // Example data
     var data = {
       labels: ["To Do", "In Progress", "Done"],
       counts: [3, 5, 2]
@@ -82,10 +76,9 @@
     });
   }
 
-  // On load
   loadIssue();
 </script>
-
     ]]>
   </Content>
+
 </Module>
