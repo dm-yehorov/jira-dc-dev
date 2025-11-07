@@ -1,84 +1,77 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Module>
-  <ModulePrefs
-    title="Pie Chart Example"
-    author="You"
-    description="Simple gadget with user stored issueKey">
-    <Require feature="setprefs"/>
-    <Require feature="dynamic-height"/>
-  </ModulePrefs>
+    <ModulePrefs
+        title="Issue Status Gadget"
+        author="Example"
+        description="Store issue key and show status">
+    </ModulePrefs>
 
-  <!-- USER PREF DEFINITION -->
-  <UserPref name="issueKey" display_name="Issue Key" datatype="string" />
+    <!-- User preference (saved automatically in Jira storage) -->
+    <UserPref name="issueKey" display_name="Issue Key" default=""/>
 
-  <Content type="html">
-    <![CDATA[
-<style>
-  .box { margin-bottom: 8px; }
-</style>
+    <!-- Main gadget view -->
+    <Content type="html" view="default">
+        <![CDATA[
+            <html>
+            <head>
+                <script>
+                    function loadStatus() {
+                        var prefs = new gadgets.Prefs();
+                        var issueKey = prefs.getString("issueKey");
 
-<div class="box">
-  <label>Issue Key:</label>
-  <input id="issueKey" type="text" />
-  <button onclick="saveIssue()">Save</button>
-</div>
+                        if (!issueKey) {
+                            document.getElementById("status").innerHTML = "No issue selected";
+                            return;
+                        }
 
-<canvas id="pieCanvas" width="300" height="300"></canvas>
+                        fetch(AJS.contextPath() + "/rest/scriptrunner/latest/custom/doSomething?key=" + issueKey)
+                            .then(r => r.json())
+                            .then(data => {
+                                var name = data.status || "Unknown";
+                                document.getElementById("status").innerHTML =
+                                    "<b>Status:</b> " + name;
+                            })
+                            .catch(err => {
+                                document.getElementById("status").innerHTML =
+                                    "Error: " + err;
+                            });
+                    }
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                    gadgets.util.registerOnLoadHandler(loadStatus);
+                </script>
+            </head>
 
-<script>
-  var prefs = gadgets.Prefs();
+            <body>
+                <div><b>Issue:</b> __MSG_issueKey__</div>
+                <div id="status">Loading...</div>
+            </body>
+            </html>
+        ]]>
+    </Content>
 
-  function loadIssue() {
-    var saved = prefs.getString("issueKey");
-    if (saved) {
-      document.getElementById("issueKey").value = saved;
-      refreshPie();
-    }
-  }
+    <!-- Config UI -->
+    <Content type="html" view="config">
+        <![CDATA[
+            <html>
+            <body>
+                <form id="cfgForm">
+                    Issue Key: <input id="issueKey" type="text"/>
+                    <button type="submit">Save</button>
+                </form>
 
-  function saveIssue() {
-    var val = document.getElementById("issueKey").value;
-    prefs.set("issueKey", val);
-    refreshPie();
-  }
+                <script>
+                    var prefs = new gadgets.Prefs();
+                    document.getElementById("issueKey").value =
+                        prefs.getString("issueKey");
 
-  function refreshPie() {
-    var key = document.getElementById("issueKey").value;
-    if (!key) return;
-
-    var data = {
-      labels: ["To Do", "In Progress", "Done"],
-      counts: [3, 5, 2]
-    };
-
-    drawPie(data);
-  }
-
-  var chartInstance = null;
-
-  function drawPie(data) {
-    var ctx = document.getElementById('pieCanvas').getContext('2d');
-
-    if (chartInstance != null) {
-      chartInstance.destroy();
-    }
-
-    chartInstance = new Chart(ctx, {
-      type: 'pie',
-      data: {
-        labels: data.labels,
-        datasets: [{
-          data: data.counts
-        }]
-      }
-    });
-  }
-
-  loadIssue();
-</script>
-    ]]>
-  </Content>
-
+                    document.getElementById("cfgForm").onsubmit = function() {
+                        prefs.set("issueKey", document.getElementById("issueKey").value);
+                        gadgets.window.close();
+                        return false;
+                    };
+                </script>
+            </body>
+            </html>
+        ]]>
+    </Content>
 </Module>
